@@ -21,8 +21,8 @@ export default function ShowData({ update }) {
       try {
         const res = await axios.get('/api/company');
         setCompanies(res.data.data);
-        console.log("data",res);
-        
+        console.log("data", res);
+
       } catch (error) {
         console.error('Error fetching companies:', error);
       }
@@ -185,9 +185,16 @@ export default function ShowData({ update }) {
                   </td>
                   <td className="px-6 py-3">
                     <div className="flex gap-2">
-                      <img src="/facebook.svg" href={company?.facebook} alt="fb" />
-                      <img src="/twitter.svg" href={company?.twitter} alt="x" />
-                      <img src="/linkedIn.svg" href={company?.linkedin} alt="linkedIn" />
+                      <a href={company?.facebook} target="_blank" rel="noopener noreferrer">
+                        <img src="/facebook.svg" alt="Facebook" />
+                      </a>
+                      <a href={company?.twitter} target="_blank" rel="noopener noreferrer">
+                        <img src="/twitter.svg" alt="Twitter" />
+                      </a>
+                      <a href={company?.linkedin} target="_blank" rel="noopener noreferrer">
+                        <img src="/linkedIn.svg" alt="LinkedIn" />
+                      </a>
+
                     </div>
                   </td>
                   <td className="px-6 py-3 truncate max-w-xs">{company.description}</td>
