@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import AddUrl from '@/components/component/addUrl';
-
+ 
 export default function CompanyPage() {
   const { id } = useParams();
   const [company, setCompany] = useState(null);
