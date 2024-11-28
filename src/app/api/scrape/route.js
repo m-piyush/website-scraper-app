@@ -2,12 +2,13 @@ import axios from 'axios';
 import { load } from 'cheerio';
 import dbConnect from '@/lib/mongodb';
 import Company from '@/models/Company';
-import puppeteer from 'puppeteer';
+const cheerio = require('cheerio');
 
+const puppeteer = require('puppeteer');
 export async function POST(req) {
   const { url } = await req.json();
-  console.log("url",url);
-  
+  console.log("url", url);
+
   try {
     if (!url) {
       return new Response(JSON.stringify({ success: false, message: 'URL is required' }), {
@@ -15,28 +16,77 @@ export async function POST(req) {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const domain = new URL(url).hostname; 
-
     const { data } = await axios.get(url);
     const $ = load(data);
 
+    console.log("url of the company", url);
 
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], 
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' }); 
 
 
-    const screenshotBuffer = await page.screenshot();
+    await page.goto(url, { waitUntil: 'networkidle2' });
+    const screenshotBuffer = await page.screenshot({ fullPage: true });
+    const buffer = Buffer.from(screenshotBuffer);
+    const screenshotBase64 = buffer.toString('base64');
+    const screenshotUrl = `data:image/png;base64,${screenshotBase64}`;
 
-    const screenshotBase64 = screenshotBuffer.toString('base64');
-    const screenshotUrl = `data:image/png;base64,${screenshotBase64}`; 
+    const getCompanyNameFromDomain = (url) => {
+      try {
+        const hostname = new URL(url).hostname; // Extract hostname
+        const parts = hostname.split('.'); // Split by '.'
 
-    let name = domain.split('.')[1] 
+        if (parts.length > 2 && parts[0] === 'www') {
+          // Case with 'www.' -> Take second part
+          return parts[1];
+        }
+        // Case without 'www.' -> Take first part
+        return parts[0];
+      } catch (error) {
+        console.error('Invalid URL:', error.message);
+        return null;
+      }
+    };
+    const { data: htmlContent } = await axios.get(url);
+    let logImg;
+    try {
+      const { data } = await axios.get(url);
+      logImg = load(data); 
+    } catch (err) {
+      console.error('Failed to fetch URL, using fallback HTML:', err.message);
+      const htmlContent = load(htmlContent);; // Replace with your HTML
+      logImg = cheerio.load(htmlContent);
+    }
+    let logoSrc = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href') || '';
+    // Extended logic for images
+    if (!logoSrc) {
+      const logoImg = $('img[alt*="logo"], img[src*="logo"]').first();
+      if (logoImg.length) {
+        logoSrc = logoImg.attr('src') || '';
+      }
+    }
+    let logo = '';
+    if (logoSrc) {
+      if (logoSrc.startsWith('/')) {
+        console.log("check1",url);
+        console.log("check2",url);
+        
+        const baseUrl = new URL(url).origin; // Assuming `url` is the base URL of the page
+        console.log("check3",baseUrl);
+
+        logo = `${baseUrl}${logoSrc}`;
+      } else if (logoSrc.startsWith('http://') || logoSrc.startsWith('https://')) {
+        logo = logoSrc;
+      } else {
+        logo = '';
+      }
+    }
+    let name = getCompanyNameFromDomain(url)
     let description = $('meta[name="description"]').attr('content') || '';
-    let logo = $('link[rel="icon"]').attr('href') || '';
+
     let facebook = '';
     let linkedin = '';
     let twitter = '';
@@ -46,7 +96,7 @@ export async function POST(req) {
     let phone = '';
     let email = '';
 
-
+    // console.log("logo", logo)
     // Extract JSON-LD structured data if available
     const jsonLdData = [];
     $('script[type="application/ld+json"]').each((_, el) => {
@@ -111,7 +161,7 @@ export async function POST(req) {
 
     const company = new Company({
       url,
-      screenshot: screenshotUrl,  
+      screenshot: screenshotUrl,
       name,
       description,
       logo,
@@ -125,11 +175,11 @@ export async function POST(req) {
       email,
     });
 
-    console.log('Company data to save:', company);
+    // console.log('Company data to save:', company);
 
-    
+
     await company.save();
-    await browser.close(); 
+    await browser.close();
 
     return new Response(JSON.stringify({ success: true, data: company }), {
       status: 200,

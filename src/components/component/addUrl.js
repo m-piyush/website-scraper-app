@@ -16,7 +16,7 @@ export default function AddUrl({ onScrapeSuccess }) {
       const res = await axios.post('/api/scrape', { url });
       setMessage(`Company "${res.data.data.name}" added successfully!`);
       setUrl('');
-      onScrapeSuccess(); 
+      onScrapeSuccess();
     } catch (error) {
       setMessage('Error scraping website.');
     }
@@ -41,14 +41,14 @@ export default function AddUrl({ onScrapeSuccess }) {
             />
           </div>
 
-          <Button className=' block sm:flex sm:w-[167px]  w-full  align-center h-[37px] px-[15px] py-[10px] bg-[#EDE5FF] text-[14px] text-[#6C2BD9] font-medium border-0 rounded-md hover:bg-[#ede8f7] hover:text-[#714bb2]' onClick={handleScrape} variant="outline">Fetch & Save Details</Button>
+          <Button className=' block sm:flex sm:w-[167px] w-full align-center h-[37px] px-[15px] py-[10px] bg-[#EDE5FF] text-[14px] text-[#6C2BD9] font-medium border-0 rounded-md hover:bg-[#ede8f7] hover:text-[#714bb2]' onClick={handleScrape} variant="outline">Fetch & Save Details</Button>
 
 
         </div>
-        {message && <p>Company added successfully</p>}
+        {message && <p>{message}</p>}
       </div>
 
-      
+
     </>
 
 

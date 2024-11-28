@@ -33,9 +33,10 @@ export default function CompanyPage() {
   }, [id]);
 
   if (error) return <div>Error: {error}</div>;
+  
   if (!company) return <div className='flex justify-center align-middle'>Loading...</div>;
 
-  return (
+ return (
     <>
       <AddUrl />
       <div className="bg-gray-100 ">
@@ -63,7 +64,7 @@ export default function CompanyPage() {
             {String(company.name).charAt(0).toUpperCase() + String(company.name).slice(1)}
               </h1>
             <p className=' text-gray-500 flex gap-2 items-center align-middle'> <img src="/description.svg" height={15} width={15} alt="fb" /> Description</p>
-            <p className="text-base w-[500px]">{company.description}</p>
+            <p className="text-base w-[300px] sm:w-[500]">{company.description}</p>
           </div>
           <div className="mt-4 sm:mt-0 text-sm text-gray-700">
             <p className="flex gap-1 font-medium">  <img src="/phone.svg" height={15} width={15} alt="fb" />  Phone: {company.phone}</p>
@@ -112,7 +113,7 @@ export default function CompanyPage() {
               Screenshot of Webpage</h2>
             {company?.screenshot ? (
               <Image
-                src={company.screenshot} // Ensure this is a valid image URL or Base64 string
+                src={company?.screenshot} 
                 alt="Screenshot"
                 width={500}
                 height={300}

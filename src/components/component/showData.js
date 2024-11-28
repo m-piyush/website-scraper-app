@@ -8,28 +8,13 @@ import { Button } from '@/components/ui/button';
 import { IoIosArrowBack } from 'react-icons/io';
 import { MdNavigateNext } from 'react-icons/md';
 
-export default function ShowData({ update }) {
-  const [companies, setCompanies] = useState([]);
+export default function ShowData({ companies, onDeleteCompanies, refreshData, loading }) {
   const [selectedCompanies, setSelectedCompanies] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [copied, setCopied] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(10);
 
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      try {
-        const res = await axios.get('/api/company');
-        setCompanies(res.data.data);
-        console.log("data", res);
-
-      } catch (error) {
-        console.error('Error fetching companies:', error);
-      }
-    };
-
-    fetchCompanies();
-  }, [update]);
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -59,14 +44,11 @@ export default function ShowData({ update }) {
     }
 
     try {
-      const response = await axios.post('/api/delete', { ids: selectedCompanies });
-      if (response.data.success) {
-        alert('Selected companies deleted successfully!');
-        setSelectedCompanies([]);
-        setSelectAll(false);
-      } else {
-        alert(`Error: ${response.data.message}`);
-      }
+      await axios.post('/api/delete', { ids: selectedCompanies });
+      onDeleteCompanies(selectedCompanies); // Update parent state
+      setSelectedCompanies([]);
+      setSelectAll(false);
+      refreshData()
     } catch (error) {
       console.error('Error deleting companies:', error);
     }
@@ -83,10 +65,10 @@ export default function ShowData({ update }) {
       : companies.filter((company) => selectedCompanies.includes(company._id));
 
     const csvContent = [
-      ['Name', 'Description', 'Email', 'Phone'].join(','),
+      ['Name', 'Description', 'Email', 'Phone', 'Facebook', 'linkedin', 'twitter', 'instagram', 'address', 'phone', 'email'].join(','),
       ...dataToExport.map(
         (company) =>
-          `"${company.name}","${company.description}","${company.email}","${company.phone}"`
+          `"${company.name}","${company.description}","${company.email}","${company.phone}","${company.facebook}","${company.linkedin}","${company.twitter}","${company.instagram}","${company.address}","${company.phone}","${company.email}"`
       ),
     ].join('\n');
 
@@ -165,44 +147,44 @@ export default function ShowData({ update }) {
             </thead>
             <tbody>
               {displayedCompanies.map((company) => (
-                <tr key={company._id} className="border-b">
-                  <td className="px-6 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedCompanies.includes(company._id)}
-                      onChange={() => handleCheckboxChange(company._id)}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-2">
-                      <Image src={company.logo} alt="logo" width={20} height={20} />
-                      <Link href={`/company/${company._id}`} className="text-[#6C2BD9] ">
+                  <tr key={company._id} className="border-b">
+                    <td className="px-6 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedCompanies.includes(company._id)}
+                        onChange={() => handleCheckboxChange(company._id)}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-3">
+                      <div className="flex items-center gap-2">
+                        <Image src={company.logo} alt="logo" width={20} height={20} />
+                        <Link href={`/company/${company._id}`} className="text-[#6C2BD9] ">
 
-                        {String(company.name).charAt(0).toUpperCase() + String(company.name).slice(1)}
-                      </Link>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3">
-                    <div className="flex gap-2">
-                      <a href={company?.facebook} target="_blank" rel="noopener noreferrer">
-                        <img src="/facebook.svg" alt="Facebook" />
-                      </a>
-                      <a href={company?.twitter} target="_blank" rel="noopener noreferrer">
-                        <img src="/twitter.svg" alt="Twitter" />
-                      </a>
-                      <a href={company?.linkedin} target="_blank" rel="noopener noreferrer">
-                        <img src="/linkedIn.svg" alt="LinkedIn" />
-                      </a>
+                          {String(company.name).charAt(0).toUpperCase() + String(company.name).slice(1)}
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3">
+                      <div className="flex gap-2">
+                        <a href={company?.facebook} target="_blank" rel="noopener noreferrer">
+                          <img src="/facebook.svg" alt="Facebook" />
+                        </a>
+                        <a href={company?.twitter} target="_blank" rel="noopener noreferrer">
+                          <img src="/twitter.svg" alt="Twitter" />
+                        </a>
+                        <a href={company?.linkedin} target="_blank" rel="noopener noreferrer">
+                          <img src="/linkedIn.svg" alt="LinkedIn" />
+                        </a>
 
-                    </div>
-                  </td>
-                  <td className="px-6 py-3 truncate max-w-xs">{company.description}</td>
-                  <td className="px-6 py-3 truncate max-w-xs">{company.address}</td>
-                  <td className="px-6 py-3 text-[#6C2BD9]">{company.phone}</td>
-                  <td className="px-6 py-3 text-[#6C2BD9]">{company.email}</td>
-                </tr>
-              ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 truncate max-w-xs">{company.description}</td>
+                    <td className="px-6 py-3 truncate max-w-xs">{company.address}</td>
+                    <td className="px-6 py-3 text-[#6C2BD9]">{company.phone}</td>
+                    <td className="px-6 py-3 text-[#6C2BD9]">{company.email}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

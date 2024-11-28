@@ -39,8 +39,13 @@ export default function Home() {
 
   return (
     <div>
-      <AddUrl onCompanyAdded={addCompany} />
-      <ShowData companies={companies} onDeleteCompanies={deleteCompanies} refreshData={fetchCompanies} loading={loading} />
+      <AddUrl onScrapeSuccess={fetchCompanies} />
+      <ShowData
+        companies={companies}
+        onDeleteCompanies={deleteCompanies}
+        refreshData={fetchCompanies}
+        loading={loading}
+      />
     </div>
   );
 }
