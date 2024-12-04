@@ -5,6 +5,8 @@ import Company from '@/models/Company';
 const cheerio = require('cheerio');
 
 const puppeteer = require('puppeteer');
+
+
 export async function POST(req) {
   const { url } = await req.json();
   console.log("url", url);

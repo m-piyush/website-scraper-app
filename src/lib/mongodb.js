@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.DB
+const MONGODB_URI = "mongodb+srv://piyush:piyush@cluster0.vlpvm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 
 if (!MONGODB_URI) {
